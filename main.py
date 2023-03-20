@@ -3,6 +3,9 @@
 from os.path import basename, splitext
 import tkinter as tk
 import tkinter.ttk as ttk
+from tkinter import filedialog
+import pylab as pl
+import os.path
 
 # from tkinter import ttk
 
@@ -41,7 +44,7 @@ class Application(tk.Tk):
         self.fileFrame.pack(padx=5,pady=5,fill="x")
         self.fileEntry = MyEntry(self.fileFrame)
         self.fileEntry.pack(fill="x")
-        self.fileBtn = tk.Button(self.fileFrame,text="...")
+        self.fileBtn = tk.Button(self.fileFrame,text="...",command=self.selectFile)
         self.fileBtn.pack(anchor="e")
         
         self.dataformatVar = tk.StringVar(value="ROW")
@@ -66,15 +69,54 @@ class Application(tk.Tk):
         self.yEdit.grid(row=2,column=1)
 
         tk.Label(self.grafFrame,text="Mřížka").grid(row=3,column=0)
-        self.gridcheck = tk.Checkbutton(self.grafFrame)
+        self.gridVar = tk.BooleanVar(value=True)
+        self.gridcheck = tk.Checkbutton(self.grafFrame,variable=self.gridVar)
         self.gridcheck.grid(row=3,column=1)
 
         tk.Label(self.grafFrame,text="čára").grid(row=4,column=0)
-        self.lineCBox = ttk.Combobox(self.grafFrame,values=("-","--","-.",":"))
+        self.lineCBox = ttk.Combobox(self.grafFrame,values=("none","-","--","-.",":"))
         self.lineCBox.grid(row=4,column=1)
 
+        self.markerVar = tk.StringVar(value="none")
+        tk.Label(self.grafFrame,text="marker").grid(row=5,column=0)
+        tk.OptionMenu(self.grafFrame,self.lineCBox,"none","+","x","1","o").grid(row=5,column=1,sticky="w")
+
+        tk.Button(self, text="vykreslit",command=self.plot).pack(anchor="w")
+
         self.btn = tk.Button(self, text="Quit", command=self.quit)
-        self.btn.pack()
+        self.btn.pack(anchor="e")
+
+    def selectFile(self):
+        self.fileEntry.value=tk.filedialog.askopenfilename()
+
+    def plot(self):
+        if not os.path.isfile(self.fileEntry.value):
+            return
+        with open(self.fileEntry.value,"r") as f:
+            if self.dataformatVar.get() == "ROW":
+                x = f.readline().split(";")
+                y = f.readline().split(";")
+                x = [float(i.replace(",",".")) for i in x]
+                y = [float(i.replace(",",".")) for i in y]
+            elif self.dataformatVar.get() == "COLUM":
+                x =[]
+                y =[]
+                while True:
+                    line = f.readline()
+                    if line == "":
+                        break
+                    else:
+                        if ";" not in line:
+                            continue
+                        x1,y1 = line.split(";")
+                        x.append(float(x1.replace(",",".")))
+                        y.append(float(y1.replace(",",".")))
+        pl.plot(x,y,linestyle=self.lineCBox.get())
+        pl.title(self.titleEdit.value)
+        pl.xlabel(self.xEdit.value)
+        pl.ylabel(self.yEdit.value)
+        pl.grid(self.gridVar.get())
+        pl.show()
 
     def quit(self, event=None):
         super().quit()
