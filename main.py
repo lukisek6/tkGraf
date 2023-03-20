@@ -79,7 +79,7 @@ class Application(tk.Tk):
 
         self.markerVar = tk.StringVar(value="none")
         tk.Label(self.grafFrame,text="marker").grid(row=5,column=0)
-        tk.OptionMenu(self.grafFrame,self.lineCBox,"none","+","x","1","o").grid(row=5,column=1,sticky="w")
+        tk.OptionMenu(self.grafFrame,self.markerVar,"none","+","x","1","o").grid(row=5,column=1,sticky="w")
 
         tk.Button(self, text="vykreslit",command=self.plot).pack(anchor="w")
 
@@ -111,7 +111,7 @@ class Application(tk.Tk):
                         x1,y1 = line.split(";")
                         x.append(float(x1.replace(",",".")))
                         y.append(float(y1.replace(",",".")))
-        pl.plot(x,y,linestyle=self.lineCBox.get())
+        pl.plot(x,y,linestyle=self.lineCBox.get(),marker=self.markerVar.get())
         pl.title(self.titleEdit.value)
         pl.xlabel(self.xEdit.value)
         pl.ylabel(self.yEdit.value)
